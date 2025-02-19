@@ -1,0 +1,156 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Calculator with Sidebar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .calculator {
+            max-width: 300px;
+        }
+        .button {
+            height: 60px;
+            width: 60px;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen bg-gray-100">
+    <div id="sidebar" class="flex flex-col w-64 bg-white shadow-lg md:block hidden">
+        <div class="p-4 bg-blue-500 text-white text-xl font-bold">Sidebar</div>
+        <div class="p-4">
+            <h2 class="text-lg font-bold mb-2">Kalkulator</h2>
+            <ul>
+                <li class="mb-2"><a href="#dollar-to-rupiah" class="text-blue-500" onclick="toggleSidebar()">Dollar ke Rupiah</a></li>
+                <li class="mb-2"><a href="#weight-calculator" class="text-blue-500" onclick="toggleSidebar()">Berat Badan</a></li>
+                <li class="mb-2"><a href="#height-calculator" class="text-blue-500" onclick="toggleSidebar()">Tinggi Badan</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="flex-1 flex flex-col items-center justify-center">
+        <button id="sidebar-toggle" class="bg-blue-500 text-white p-2 rounded mb-4 md:hidden" onclick="toggleSidebar()">Buka Sidebar</button>
+        <div class="calculator bg-white rounded-lg shadow-lg p-4">
+            <div id="display" class="bg-blue-500 text-white text-right rounded-t-lg p-4 text-2xl font-bold">0</div>
+            <div class="grid grid-cols-4 gap-2 p-4">
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="appendCharacter('%')">%</button>
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="appendCharacter('√')">√</button>
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="clearEntry()">CE</button>
+                <button class="button bg-blue-900 text-white rounded-full p-4 text-xl font-bold" onclick="clearDisplay()">C</button>
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="appendCharacter('7')">7</button>
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="appendCharacter('8')">8</button>
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="appendCharacter('9')">9</button>
+                <button class="button bg-red-500 text-white rounded-full p-4 text-xl font-bold" onclick="appendCharacter('-')">-</button>
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="appendCharacter('4')">4</button>
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="appendCharacter('5')">5</button>
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="appendCharacter('6')">6</button>
+                <button class="button bg-blue-500 text-white rounded-full p-4 text-xl font-bold" onclick="appendCharacter('/')">÷</button>
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="appendCharacter('1')">1</button>
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="appendCharacter('2')">2</button>
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="appendCharacter('3')">3</button>
+                <button class="button bg-yellow-500 text-white rounded-full p-4 text-xl font-bold" onclick="appendCharacter('*')">×</button>
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="appendCharacter('.')">.</button>
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="appendCharacter('0')">0</button>
+                <button class="button bg-gray-200 rounded-full p-4 text-xl font-bold" onclick="calculateResult()">=</button>
+                <button class="button bg-green-500 text-white rounded-full p-4 text-xl font-bold" onclick="appendCharacter('+')">+</button>
+            </div>
+        </div>
+
+        <div id="dollar-to-rupiah" class="hidden">
+            <div class="bg-white rounded-lg shadow-lg p-4 mt-4">
+                <h2 class="text-xl font-bold mb-4">Dollar ke Rupiah</h2>
+                <input type="number" id="dollar" placeholder="Dollar" class="border p-2 rounded mb-2 w-full">
+                <button onclick="convertDollarToRupiah()" class="bg-blue-500 text-white p-2 rounded w-full">Convert</button>
+                <div id="rupiah" class="mt-2 text-xl font-bold"></div>
+            </div>
+        </div>
+
+        <div id="weight-calculator" class="hidden">
+            <div class="bg-white rounded-lg shadow-lg p-4 mt-4">
+                <h2 class="text-xl font-bold mb-4">Berat Badan</h2>
+                <input type="number" id="weight" placeholder="Berat (kg)" class="border p-2 rounded mb-2 w-full">
+                <button onclick="calculateWeight()" class="bg-blue-500 text-white p-2 rounded w-full">Calculate</button>
+                <div id="weight-result" class="mt-2 text-xl font-bold"></div>
+            </div>
+        </div>
+
+        <div id="height-calculator" class="hidden">
+            <div class="bg-white rounded-lg shadow-lg p-4 mt-4">
+                <h2 class="text-xl font-bold mb-4">Tinggi Badan</h2>
+                <input type="number" id="height" placeholder="Tinggi (cm)" class="border p-2 rounded mb-2 w-full">
+                <button onclick="calculateHeight()" class="bg-blue-500 text-white p-2 rounded w-full">Calculate</button>
+                <div id="height-result" class="mt-2 text-xl font-bold"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let display = document.getElementById('display');
+        let currentInput = '';
+
+        function appendCharacter(character) {
+            if (character === '√') {
+                currentInput = Math.sqrt(parseFloat(currentInput)).toString();
+            } else {
+                currentInput += character;
+            }
+            display.textContent = currentInput;
+        }
+
+        function clearEntry() {
+            currentInput = currentInput.slice(0, -1);
+            display.textContent = currentInput || '0';
+        }
+
+        function clearDisplay() {
+            currentInput = '';
+            display.textContent = '0';
+        }
+
+        function calculateResult() {
+            try {
+                currentInput = eval(currentInput).toString();
+                display.textContent = currentInput;
+            } catch (error) {
+                display.textContent = 'Error';
+                currentInput = '';
+            }
+        }
+
+        function convertDollarToRupiah() {
+            const dollar = document.getElementById('dollar').value;
+            const rupiah = dollar * 15000; // Example conversion rate
+            document.getElementById('rupiah').textContent = `Rp ${rupiah}`;
+        }
+
+        function calculateWeight() {
+            const weight = document.getElementById('weight').value;
+            document.getElementById('weight-result').textContent = `Berat Anda: ${weight} kg`;
+        }
+
+        function calculateHeight() {
+            const height = document.getElementById('height').value;
+            document.getElementById('height-result').textContent = `Tinggi Anda: ${height} cm`;
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                sidebarToggle.textContent = 'Tutup Sidebar';
+            } else {
+                sidebar.classList.add('hidden');
+                sidebarToggle.textContent = 'Buka Sidebar';
+            }
+        }
+
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function() {
+                document.querySelectorAll('.hidden').forEach(section => {
+                    section.classList.add('hidden');
+                });
+                document.querySelector(this.getAttribute('href')).classList.remove('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
